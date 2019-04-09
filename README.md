@@ -35,3 +35,7 @@ Notes
 Linking was a trial and error affair. I'm not really sure if the conanfile package should have handled all of this or it's due to the fact that the author hasn't exported public library dependancies in the cmake.
 
 Nana lacks an "install" so I hacked around it in conan to install the include files into the expected location
+
+The Makefile was used to drive conan package development using this blog post as a guide
+
+https://bincrafters.github.io/2017/11/10/Updated-Conan-Package-Flow/
