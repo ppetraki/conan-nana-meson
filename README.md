@@ -19,15 +19,29 @@ Both are provided in debs/
 
 Usage
 ----
-#### Install Nana as a conan package
-    ./conan-pkg-build.sh
+#### Packaging workflow
+Taken from best practices blogged here:
+https://bincrafters.github.io/2017/11/10/Updated-Conan-Package-Flow/
 
-This expects that a "default" and "debug" profile exists, where "default" is the release build.
+There is a makefile target for each stage of the packaging workflow
+
+The default makefile target invokes all of the prototyping stages + clean.
+
+#### Install Nana as a conan package
+Unconditionally removes the existing installed version (1.6.2) and then builds and installs both Release and Debug builds.
+
+    make package-install
 
 #### Build and run nana example
+Once the package is installed, you can try out the sample project against it.
+
     cd nana-test
     make debug
     build-debug/example
+
+or from the top
+
+    make smoke-test
 
 Notes
 -----
@@ -38,4 +52,5 @@ Nana lacks an "install" so I hacked around it in conan to install the include fi
 
 The Makefile was used to drive conan package development using this blog post as a guide
 
-https://bincrafters.github.io/2017/11/10/Updated-Conan-Package-Flow/
+
+Markdown file edited using ReText, which offers editing + live preview.

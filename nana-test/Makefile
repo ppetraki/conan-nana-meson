@@ -53,7 +53,7 @@ build_dispatch:
 debug: header build_dispatch tags
 
 .PHONY: release
-release: header build_dispatch tag
+release: header build_dispatch tags
 
 .PHONY: check
 check: clean

@@ -1,0 +1,10 @@
+compile_commands.json
+current-build
+build-*
+Debug
+Release
+obj
+bin
+tags
+TAGS
+*.swp
