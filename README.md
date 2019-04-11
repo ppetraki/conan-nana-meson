@@ -32,25 +32,36 @@ Unconditionally removes the existing installed version (1.6.2) and then builds a
 
     make package-install
 
+and of course there's an uninstall
+
+    make package-uninstall
+
 #### Build and run nana example
 Once the package is installed, you can try out the sample project against it.
 
     cd nana-test
-    make debug
-    build-debug/example
+    make release
+    build-release/example
 
 or from the top
 
     make smoke-test
+
+A debug target is also provided
+
+    make smoke-test-debug
 
 Notes
 -----
 
 Linking was a trial and error affair. I'm not really sure if the conanfile package should have handled all of this or it's due to the fact that the author hasn't exported public library dependancies in the cmake.
 
-Nana lacks an "install" so I hacked around it in conan to install the include files into the expected location
+Nana lacks an "install" so I hacked around it in conan build() to install the include files into the expected location
+for package() step.
 
-The Makefile was used to drive conan package development using this blog post as a guide
+The Makefile is used to drive conan package development using this blog post as a guide,
+
+https://bincrafters.github.io/2017/11/10/Updated-Conan-Package-Flow/
 
 
 Markdown file edited using ReText, which offers editing + live preview.

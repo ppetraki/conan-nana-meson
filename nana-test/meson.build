@@ -37,12 +37,6 @@ cpp = meson.get_compiler('cpp')
 add_project_arguments(cpp.get_supported_arguments(cpp_flags), language : 'cpp')
 add_project_link_arguments(cpp.get_supported_link_arguments(link_flags), language : 'cpp')
 
-thread_dep     = dependency('threads', required: true)
-fontconfig_dep = dependency('fontconfig', required: true)
-xlib_dep       = dependency('x11', required: true)
-freetype_dep   = dependency('xft', required: true)
-filesystem_dep = cpp.find_library('stdc++fs', required: true)
-
 # provided by conan
 nana_dep       = dependency('nana', method : 'pkg-config', required: true)
 
@@ -52,5 +46,5 @@ example_sources = files('''
 
 executable('example',
     example_sources,
-    dependencies : [nana_dep, xlib_dep, freetype_dep, fontconfig_dep, filesystem_dep, thread_dep],
+    dependencies : [nana_dep],
     )

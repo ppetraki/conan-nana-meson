@@ -1,35 +1,93 @@
 from conans import ConanFile, CMake, tools
+from six import StringIO
+import os
+
+# Tested on Ubuntu 18.04
+# TODO
+# - test against 16.04 and 14.04 to determine dependancy gap
+# - What's conan's policy for interactive installers? e.g. need boost_filesystem
+# - add RH, fedora, and the Suse
+# - Windows and Mac? I'm going to need outside contributors for that
 
 class NanaConan(ConanFile):
     name = "nana"
     version = "1.6.2"
-    license = "<Put the package license here>"
-    author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of Nana here>"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
+    license = "None" # XXX should probably be MIT
+    author = "Peter M. Petrakis  peter.petrakis@protonmail.com"
+    url = "https://github.com/ppetraki/conan-nana-meson.git"
+    description = "A modern C++ GUI library http://nanapro.org"
+    topics = ("gui", "modern-cpp", "cross-platform")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     default_options = "shared=False"
     generators = "cmake"
 
+    # the preceding was from the boilerplate, the _ stuff is mine.
+
+    #XXX this should *really* be part of the boilerplate, just a like a deb...
+    _upstream      = "https://github.com/cnjinhao/nana.git"
+    _tag           = "v" + version
+
+    # make this stand out
+    _vcs_folder    = "nana" + "_" + _tag
+
+    # highlight green background for color printing. Be grateful it's not orange.
+    _start_color = '\x1b[6;30;42m'
+    _stop_color  = '\x1b[0m'
+
+    # debug helper
+    def _ls(self, path):
+        sio = StringIO()
+        self.run("pwd", output=sio)
+        self.run("ls -l %s" % path, output=sio)
+        sio = sio.getvalue().rstrip()
+        print((self._start_color + "*** LS %s ***" + self._stop_color) % (sio))
+        return sio
+
+    def _show_pwd(self):
+        sio = StringIO()
+        self.run("pwd", output=sio)
+        self.run("ls -l", output=sio)
+        sio = sio.getvalue().rstrip()
+        print((self._start_color + "*** PATH %s ***" + self._stop_color) % (sio))
+        return sio
+
+    def _show_env(self):
+        print((self._start_color + "*** ENV %s ***" + self._stop_color)
+                % (os.environ))
+
+    # These calls do not share state. Do not create class or global variables
+    # with the intention of writing back state for use later on.
+
+    #
+    # probably a good idea to make these calls as close to idempotent as possible too
+    #
     def source(self):
-        self.run("git clone https://github.com/cnjinhao/nana.git")
-        #self.run("cd hello && git checkout static_shared")
+        self.run("rm -rf %s" % self._vcs_folder)
+
+        print((self._start_color + "*** cloning %s at tag %s as detached HEAD to folder: %s ***" + self._stop_color)
+                % (self._upstream, self._tag, self._vcs_folder))
+
+        self.run("git clone --branch %s  -- %s %s" %
+                (self._tag, self._upstream, self._vcs_folder))
 
     def build(self):
-        cmake = CMake(self, parallel=True)
-        cmake.configure(source_folder="nana")
+        cmake = CMake(self)
+        cmake.configure(source_folder=self._vcs_folder)
         cmake.build()
-        self.run("cp -a %s/nana/include include" % self.source_folder)
+        # conan 1.10: build is lying about installing the include/ into
+        # package folder. It works in the real package installation but in
+        # the sandbox it doesn't do it.
+        self.run("cp -a %s/%s/include nana_include" %
+                (self.source_folder, self._vcs_folder))
 
-        # Explicit way:
-        # self.run('cmake %s/hello %s'
-        #          % (self.source_folder, cmake.command_line))
-        # self.run("cmake --build . %s" % cmake.build_config)
-
+    # BTW self.source_folder ceases to exist in this step
     def package(self):
-        self.copy("*", dst="include", src="include")
+        #self._show_pwd()
+
+        # src is in the build() which is why it looks weird
+        # dst is package dir
+        self.copy("*", dst="include", src="nana_include")
         self.copy("*nana.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
@@ -37,4 +95,18 @@ class NanaConan(ConanFile):
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["nana"]
+        suffix = "_d" if self.settings.build_type == "Debug" else ""
+        libnana = "nana" + suffix
+
+        self.cpp_info.libs = [libnana]
+
+        # build says c++14 but we'll use 11 for a wider audiance
+        self.cpp_info.cppflags = ["-std=c++11"]
+        # derived by build() output NANA_LINKS
+        self.cpp_info.libs.append("pthread")
+        self.cpp_info.libs.append("X11")
+        self.cpp_info.libs.append("Xft")
+        self.cpp_info.libs.append("fontconfig")
+        # XXX this may be busted outside of 18.04 which will
+        # require me to use boost_filesystem
+        self.cpp_info.libs.append("stdc++fs")
