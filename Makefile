@@ -22,7 +22,10 @@ package-install: package-uninstall
 	conan create   . ppetraki/nana -s build_type=Debug
 
 package-uninstall:
-	conan remove -f nana/1.6.2@ppetraki/nana
+	# always exit with success because you could have removed
+	# it manually ahead of time which will cause package-install to
+	# fail as this dependent rule will fail first
+	conan remove -f nana/1.6.2@ppetraki/nana || :
 
 smoke-test:
 	cd nana-test && make release && build-release/example
