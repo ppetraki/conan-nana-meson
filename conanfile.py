@@ -31,11 +31,11 @@ class NanaConan(ConanFile):
     # make this stand out
     _vcs_folder    = "nana" + "_" + _tag
 
-    # highlight green background for color printing. Be grateful it's not orange.
+    # highlight green background for color printing, be grateful it's not orange.
     _start_color = '\x1b[6;30;42m'
     _stop_color  = '\x1b[0m'
 
-    # debug helper
+    # debug helpers
     def _ls(self, path):
         sio = StringIO()
         self.run("pwd", output=sio)
@@ -73,26 +73,23 @@ class NanaConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
+
+        # cmake install target is not enabled by default. It installs
+        # everything into a package/ under the build dir.
+        cmake.definitions["NANA_CMAKE_INSTALL"] = "ON"
+
         cmake.configure(source_folder=self._vcs_folder)
         cmake.build()
-        # conan 1.10: build is lying about installing the include/ into
-        # package folder. It works in the real package installation but in
-        # the sandbox it doesn't do it.
-        self.run("cp -a %s/%s/include nana_include" %
-                (self.source_folder, self._vcs_folder))
+        cmake.install()
 
     # BTW self.source_folder ceases to exist in this step
     def package(self):
-        #self._show_pwd()
-
-        # src is in the build() which is why it looks weird
-        # dst is package dir
-        self.copy("*", dst="include", src="nana_include")
-        self.copy("*nana.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.dylib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+        self.copy("*",         dst="include", src="package/include")
+        self.copy("*nana.lib", dst="lib",     src="package/lib", keep_path=False)
+        self.copy("*.dll",     dst="bin",     src="package/bin", keep_path=False)
+        self.copy("*.so",      dst="lib",     src="package/lib", keep_path=False)
+        self.copy("*.dylib",   dst="lib",     src="package/lib", keep_path=False)
+        self.copy("*.a",       dst="lib",     src="package/lib", keep_path=False)
 
     def package_info(self):
         suffix = "_d" if self.settings.build_type == "Debug" else ""
@@ -100,7 +97,7 @@ class NanaConan(ConanFile):
 
         self.cpp_info.libs = [libnana]
 
-        # build says c++14 but we'll use 11 for a wider audiance
+        # build says c++14 but we'll use 11 for a wider audience
         self.cpp_info.cppflags = ["-std=c++11"]
         # derived by build() output NANA_LINKS
         self.cpp_info.libs.append("pthread")
