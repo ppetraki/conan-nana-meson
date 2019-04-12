@@ -68,13 +68,17 @@ class NanaConan(ConanFile):
 
         self.cpp_info.libs = [libnana]
 
-        # build says c++14 but we'll use 11 for a wider audience
-        self.cpp_info.cppflags = ["-std=c++11"]
+        # build says c++14, probably because of -lstdc++fs. When this
+        # becomes more cross platform we should be able to vary this
+        # and whether we import boost_filesystem over stdc++fs
+        self.cpp_info.cppflags = ["-std=c++14"]
+
         # derived by build() output NANA_LINKS
         self.cpp_info.libs.append("pthread")
         self.cpp_info.libs.append("X11")
         self.cpp_info.libs.append("Xft")
         self.cpp_info.libs.append("fontconfig")
+
         # XXX this may be busted outside of 18.04 which will
         # require me to use boost_filesystem
         self.cpp_info.libs.append("stdc++fs")
