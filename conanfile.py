@@ -1,6 +1,4 @@
 from conans import ConanFile, CMake, tools
-from six import StringIO
-import os
 
 # Tested on Ubuntu 18.04
 # TODO
@@ -10,63 +8,37 @@ import os
 # - Windows and Mac? I'm going to need outside contributors for that
 
 class NanaConan(ConanFile):
-    name = "nana"
-    version = "1.6.2"
-    license = "None" # XXX should probably be MIT
-    author = "Peter M. Petrakis  peter.petrakis@protonmail.com"
-    url = "https://github.com/ppetraki/conan-nana-meson.git"
-    description = "A modern C++ GUI library http://nanapro.org"
-    topics = ("gui", "modern-cpp", "cross-platform")
-    settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
+    name            = "nana"
+    version         = "1.6.2"
+    license         = "None" # XXX should probably be MIT
+    author          = "Peter M. Petrakis  peter.petrakis@protonmail.com"
+    url             = "https://github.com/ppetraki/conan-nana-meson.git"
+    description     = "A modern C++ GUI library http://nanapro.org"
+    topics          = ("gui", "modern-cpp", "cross-platform")
+    settings        = "os", "compiler", "build_type", "arch"
+    options         = {"shared": [True, False]}
     default_options = "shared=False"
-    generators = "cmake"
+    generators      = "cmake"
 
     # the preceding was from the boilerplate, the _ stuff is mine.
 
     #XXX this should *really* be part of the boilerplate, just a like a deb...
-    _upstream      = "https://github.com/cnjinhao/nana.git"
-    _tag           = "v" + version
+    _upstream   = "https://github.com/cnjinhao/nana.git"
+    _tag        = "v" + version
 
     # make this stand out
-    _vcs_folder    = "nana" + "_" + _tag
-
-    # highlight green background for color printing, be grateful it's not orange.
-    _start_color = '\x1b[6;30;42m'
-    _stop_color  = '\x1b[0m'
-
-    # debug helpers
-    def _ls(self, path):
-        sio = StringIO()
-        self.run("pwd", output=sio)
-        self.run("ls -l %s" % path, output=sio)
-        sio = sio.getvalue().rstrip()
-        print((self._start_color + "*** LS %s ***" + self._stop_color) % (sio))
-        return sio
-
-    def _show_pwd(self):
-        sio = StringIO()
-        self.run("pwd", output=sio)
-        self.run("ls -l", output=sio)
-        sio = sio.getvalue().rstrip()
-        print((self._start_color + "*** PATH %s ***" + self._stop_color) % (sio))
-        return sio
-
-    def _show_env(self):
-        print((self._start_color + "*** ENV %s ***" + self._stop_color)
-                % (os.environ))
+    _vcs_folder = "nana" + "_" + _tag
 
     # These calls do not share state. Do not create class or global variables
     # with the intention of writing back state for use later on.
-
     #
     # probably a good idea to make these calls as close to idempotent as possible too
-    #
+
     def source(self):
         self.run("rm -rf %s" % self._vcs_folder)
 
-        print((self._start_color + "*** cloning %s at tag %s as detached HEAD to folder: %s ***" + self._stop_color)
-                % (self._upstream, self._tag, self._vcs_folder))
+        #print(('\x1b[6;30;42m' + "cloning %s at tag %s as detached HEAD to folder:\n %s" + '\x1b[0m')
+        #        % (self._upstream, self._tag, self.source_folder + "/" + self._vcs_folder))
 
         self.run("git clone --branch %s  -- %s %s" %
                 (self._tag, self._upstream, self._vcs_folder))
@@ -82,7 +54,6 @@ class NanaConan(ConanFile):
         cmake.build()
         cmake.install()
 
-    # BTW self.source_folder ceases to exist in this step
     def package(self):
         self.copy("*",         dst="include", src="package/include")
         self.copy("*nana.lib", dst="lib",     src="package/lib", keep_path=False)
